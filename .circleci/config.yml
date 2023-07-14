@@ -25,35 +25,25 @@ jobs:
           name: Test pipeline with cover report
           command: |
             mkdir -p reports
-            go list ./... | circleci tests run --split-by=timings --timings-type "classname" --command "xargs gotestsum --debug --junitfile reports/gotestsum-report.xml --format testname -- -gcflags=\"all=-N -l\" -tags=$tags -coverprofile=reports/cover.out -count=1 -failfast -p 5 -cpu 12 -v" --verbose
-      - run:
-          name: Move reports output
-          command: |
-            mv reports/cover.out reports/cover-$CIRCLE_NODE_INDEX.out
-            mv reports/gotestsum-report.xml reports/gotestsum-report-$CIRCLE_NODE_INDEX.xml
+            go list ./... | circleci tests run --split-by=timings --timings-type "classname" --command "xargs gotestsum --debug --junitfile reports/gotestsum-report.xml --format testname -- -gcflags=\"all=-N -l\" -tags=$tags -coverprofile=reports/cover.out -count=1 -failfast" --verbose
       # For a rerun that succeeds, restore the coverage files from the failed run
       - restore_cache:
           key: coverage-{{.Revision}}-{{.Environment.CIRCLE_NODE_INDEX}}
-          when: on_success
       # Save the coverage for rerunning failed tests. CircleCI will skip saving if this revision key has already been saved.
       - save_cache:
           key: coverage-{{.Revision}}-{{.Environment.CIRCLE_NODE_INDEX}}
           paths:
-            - /home/circleci/go/testtests/reports/cover.out
-          when: on_fail
-      - run:
-          name: Merge coverage reports
-          command: |
-            cat reports/cover*.out > reports/cover-$CIRCLE_NODE_INDEX.out
-      - run:
-          name: Save html coverage
-          command: go tool cover -html=reports/cover-$CIRCLE_NODE_INDEX.out -o reports/cover.html
+            - reports/cover.out
           when: always
       - store_test_results:
-          path: /home/circleci/go/testtests/reports/
+          path: /reports/gotestsum-report.xml
+          when: always
+      - run:
+          name: Save html coverage
+          command: go tool cover -html=reports/cover.out -o reports/cover.html
           when: always
       - store_artifacts: # upload test coverage as artifact
-          path: /home/circleci/go/testtests/reports/
+          path: reports/cover.html
           when: always
       - persist_to_workspace:
           root: /home/circleci/go/
