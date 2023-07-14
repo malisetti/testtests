@@ -1,0 +1,53 @@
+version: 2.1
+
+executors:
+  default:
+    docker:
+      - image: cimg/go:1.17.13
+    environment:
+      GOPATH: /home/circleci/go
+      WORKSPACE: /home/circleci/go/testtests
+      GOTRACEBACK: all
+      GOSUMDB: "off"
+      GO111MODULE: "on"
+      GOPROXY: direct
+    working_directory: /home/circleci/go/testtests
+jobs:
+  test:
+    resource_class: small
+    executor: default
+    parallelism: 2
+    steps:
+      - attach_workspace:
+          at: /home/circleci/go
+      - setup-timezone
+      - run:
+          name: Test pipeline with cover report
+          command: |
+            mkdir -p reports
+            go list ./... | circleci tests run --split-by=timings --timings-type "classname" --command "xargs gotestsum --debug --junitfile reports/gotestsum-report-$CIRCLE_NODE_INDEX.xml --format testname -- -gcflags=\"all=-N -l\" -tags=$tags -coverprofile=reports/cover.out -count=1 -failfast -p 5 -cpu 12 -v" --verbose
+      # For a rerun that succeeds, restore the coverage files from the failed run
+      - restore_cache:
+          key: coverage-{{.Revision}}-{{.Environment.CIRCLE_NODE_INDEX}}
+      # Save the coverage for rerunning failed tests. CircleCI will skip saving if this revision key has already been saved.
+      - save_cache:
+          key: coverage-{{.Revision}}-{{.Environment.CIRCLE_NODE_INDEX}}
+          paths:
+            - /home/circleci/go/testtests/reports/cover.out
+          when: always
+      - store_test_results:
+          path: /home/circleci/go/testtests/reports/
+          when: always
+      - store_artifacts: # upload test coverage as artifact
+          path: /home/circleci/go/testtests/reports/
+          when: always
+      - persist_to_workspace:
+          root: /home/circleci/go/
+          paths:
+            - testtests/reports/
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - test
