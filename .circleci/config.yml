@@ -49,9 +49,18 @@ jobs:
           root: /home/circleci/go/
           paths:
             - testtests/reports/
-
+  list-reports:
+    resource_class: small
+    executor: default
+    steps:
+      - attach_workspace:
+          at: /home/circleci/go
+      - run:
+          name: List reports dir
+          command: ls -lA reports/
 workflows:
   version: 2
   build-and-test:
     jobs:
       - test
+      - list-reports
