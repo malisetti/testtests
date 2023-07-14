@@ -20,6 +20,7 @@ jobs:
     steps:
       - attach_workspace:
           at: /home/circleci/go
+      - checkout
       - run:
           name: Test pipeline with cover report
           command: |
