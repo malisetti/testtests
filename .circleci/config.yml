@@ -36,7 +36,7 @@ jobs:
             - reports/cover.out
           when: always
       - store_test_results:
-          path: /reports/gotestsum-report.xml
+          path: reports/gotestsum-report.xml
           when: always
       - run:
           name: Save html coverage
