@@ -35,6 +35,10 @@ jobs:
           paths:
             - /home/circleci/go/testtests/reports/cover.out
           when: always
+      - run:
+          name: Save html coverage
+          command: go tool cover -html=reports/cover.out -o reports/cover.html
+          when: always
       - store_test_results:
           path: /home/circleci/go/testtests/reports/
           when: always
