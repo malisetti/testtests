@@ -48,7 +48,6 @@ jobs:
       - run:
           name: Add node index to reports
           command: |
-            mv reports/gotestsum-report.xml reports/gotestsum-report-${CIRCLE_NODE_INDEX}.xml
             mv reports/cover.out reports/cover-${CIRCLE_NODE_INDEX}.out
       - persist_to_workspace:
           root: /home/circleci/go/
