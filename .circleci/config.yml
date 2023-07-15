@@ -26,15 +26,25 @@ jobs:
           command: |
             mkdir -p reports
             go list ./... | circleci tests run --split-by=timings --timings-type "classname" --command "xargs gotestsum --debug --junitfile reports/gotestsum-report.xml --format testname -- -gcflags=\"all=-N -l\" -tags=$tags -coverprofile=reports/cover.out -count=1 -failfast" --verbose
+            ls -lA reports
+            stat reports/cover.out
       # For a rerun that succeeds, restore the coverage files from the failed run
       - restore_cache:
           key: coverage-{{.Revision}}-{{.Environment.CIRCLE_NODE_INDEX}}
+      - run:
+          name: Stat cover.out
+          command: |
+            stat reports/cover.out
       # Save the coverage for rerunning failed tests. CircleCI will skip saving if this revision key has already been saved.
       - save_cache:
           key: coverage-{{.Revision}}-{{.Environment.CIRCLE_NODE_INDEX}}
           paths:
             - reports/cover.out
           when: always
+      - run:
+          name: Stat cover.out
+          command: |
+            stat reports/cover.out
       - store_test_results:
           path: reports/gotestsum-report.xml
           when: always
