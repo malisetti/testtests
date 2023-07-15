@@ -35,6 +35,7 @@ jobs:
           name: Stat cover.out
           command: |
             stat reports/cover.out
+          when: always
       # Save the coverage for rerunning failed tests. CircleCI will skip saving if this revision key has already been saved.
       - save_cache:
           key: coverage-{{.Revision}}-{{.Environment.CIRCLE_NODE_INDEX}}
@@ -45,6 +46,7 @@ jobs:
           name: Stat cover.out
           command: |
             stat reports/cover.out
+          when: always
       - store_test_results:
           path: reports/gotestsum-report.xml
           when: always
